@@ -1,4 +1,4 @@
-# RISCV-in-7-weekends
+# riscv-in-7-weekends
 
 RV32I single-cycle and 5-stage pipelined cores in Verilog, with forwarding. A hobby project built over 7 weekends.
 
@@ -20,52 +20,34 @@ Both designs follow the Harris & Harris *Digital Design and Computer Architectur
 | `sw` | ✅ | ⚠️ datapath supports it, not yet tested |
 | `addi` | ❌ | ✅ |
 
-**Not yet:** `beq` / branches, load-use stall, branch flush.
-
 ## Repo layout
 
 ```
 riscv-in-7-weekends/
 ├── single_cycle/
-│   ├── core_top.v          # top level (includes the files below)
-│   ├── alu.v
-│   ├── cu.v                # main decoder + ALU decoder
-│   ├── proc_comps.v        # PC, instruction/data memory, register file
-│   └── tb_riscv_core.v     # self-checking testbench
+│   ├── Single_core_top.v           # top level (includes the files below)
+│   ├── ALU_des.v
+│   ├── Control_unit.v              # main decoder + ALU decoder
+│   ├── Processor_components.v      # PC, instruction/data memory, register file
+│   └── tb/
+│       └── SingleCycle_tb.sv       # self-checking testbench
 ├── pipeline/
-│   ├── core_pipe_top.v     # top level + pipeline registers
-│   ├── fetch.v
-│   ├── decode.v
-│   ├── execute.v
-│   ├── memory.v
-│   ├── writeback.v
-│   ├── hazard_unit.v       # forwarding logic
-│   ├── cu_pipe.v
-│   ├── proc_comps_pipe.v   # ALU, memories, register file, muxes, extender
-│   └── tb_riscv_pipe.v     # self-checking testbench
+│   ├── Core_pipe_top.v             # top level + pipeline registers
+│   ├── Fetch_cycle.v
+│   ├── Decode_cycle.v
+│   ├── Execute_cycle.v
+│   ├── Memory_cycle.v
+│   ├── WriteBack_cycle.v
+│   ├── Hazard_cycle.v              # forwarding logic
+│   ├── ControlUnit_pipe.v
+│   ├── ProcessorComponents_pipe.v  # ALU, memories, register file, muxes, extender
+│   └── tb/
+│       └── Pipeline_tb.sv          # self-checking testbench
 ├── docs/
 │   ├── pipeline_waveform.png
 │   ├── pipeline_waveform_annotated.png
 │   └── tcl_console_single_cycle.png
 └── README.md
-```
-
-## Running the simulations
-
-Both testbenches load their program directly into instruction memory (no hex file needed), run it, and print `PASS` / `FAIL` for every destination register.
-
-**Vivado:** add the design files and the testbench as simulation sources, set the testbench as the simulation top, and click Run Simulation.
-
-**Icarus Verilog:**
-
-```bash
-# single-cycle (core_top.v includes the other files)
-cd single_cycle
-iverilog -g2005 -o sim tb_riscv_core.v core_top.v && vvp sim
-
-# pipelined
-cd pipeline
-iverilog -g2005 -o sim *.v && vvp sim
 ```
 
 ## Results
@@ -107,10 +89,3 @@ The two `add`s read registers that haven't been written back yet. The register f
 - **"It elaborated" does not mean "it works."** Verilog happily accepts an undriven `alu_out`, a 1-bit bus where 5 bits belong, or a typo'd `rsnt` that silently becomes a new wire.
 - **Read the port-width warnings.** Icarus pads a missing select bit with 0, but Vivado's simulator left it as `Z`. That turned a clean mux into partial-X outputs like `0000000X`.
 - **Forwarding isn't the whole story.** An instruction can read a register in the same cycle it's being written back, which forwarding can't cover. The register file needs a write-through bypass.
-
-## Next up
-
-- [ ] `beq` and branch flush
-- [ ] Load-use stall
-- [ ] Test `sw` on the pipeline
-- [ ] More I-type ALU ops (`andi`, `ori`, `slti`)
