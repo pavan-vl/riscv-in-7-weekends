@@ -15,10 +15,10 @@ Both designs follow the Harris & Harris *Digital Design and Computer Architectur
 
 | Instruction | Single-cycle | Pipelined |
 |---|:---:|:---:|
-| `add`, `sub`, `and`, `or`, `slt` | ✅ | ✅ |
-| `lw` | ✅ | ✅ |
-| `sw` | ✅ | ⚠️ datapath supports it, not yet tested |
-| `addi` | ❌ | ✅ |
+| `add`, `sub`, `and`, `or`, `slt` | Yes | Yes |
+| `lw` | Yes | Yes |
+| `sw` | Yes | Datapath supports it, not yet tested |
+| `addi` | No | Yes |
 
 ## Repo layout
 
@@ -56,7 +56,7 @@ riscv-in-7-weekends/
 
 Test program: `add`, `sub`, `or`, `and`, `slt`, `sw`, `lw`, one instruction per clock.
 
-![Single-cycle TCL console output](docs/tcl_console_single_cycle.png)
+![Single-cycle simulation output](docs/tcl_console_single_cycle.png)
 
 ### Pipelined
 
@@ -87,5 +87,5 @@ The two `add`s read registers that haven't been written back yet. The register f
 ## Things I learned the hard way
 
 - **"It elaborated" does not mean "it works."** Verilog happily accepts an undriven `alu_out`, a 1-bit bus where 5 bits belong, or a typo'd `rsnt` that silently becomes a new wire.
-- **Read the port-width warnings.** Icarus pads a missing select bit with 0, but Vivado's simulator left it as `Z`. That turned a clean mux into partial-X outputs like `0000000X`.
+- **Read the port-width warnings.** One simulator padded a missing select bit with 0, another left it as `Z`. That turned a clean mux into partial-X outputs like `0000000X`.
 - **Forwarding isn't the whole story.** An instruction can read a register in the same cycle it's being written back, which forwarding can't cover. The register file needs a write-through bypass.
